@@ -141,6 +141,9 @@
     $$("#osi-route li").forEach((item, index) => { item.classList.toggle("active", index === stage); item.classList.toggle("done", index < stage); });
     $$(".step-meter i").forEach((item, index) => item.classList.toggle("active", step && index === (step.action === "desencapsula" ? step.level - 1 : 7 - step.level)));
     const panel = $(".pdu-stage"); panel.style.setProperty("--active-color", layer.color);
+    const visualStage = $(".osi-stage");
+    visualStage.classList.toggle("travel-ab", Boolean(step) && step.direction === "A → B");
+    visualStage.classList.toggle("travel-ba", Boolean(step) && step.direction === "B → A");
     const message = $("#osi-message").value.trim() || "Datos de aplicación";
     const visual = $("#pdu-visual"); visual.textContent = "";
     if (!step) {
@@ -169,7 +172,7 @@
   $("#osi-step").addEventListener("click", nextOsi);
   $("#osi-reset").addEventListener("click", () => { stopAuto(); state.osiIndex = -1; renderOsi(); sound("nav"); });
   $("#osi-message").addEventListener("input", renderOsi);
-  $("#osi-auto").addEventListener("click", () => { if (state.autoTimer) return stopAuto(); $("#osi-auto").textContent = "Ⅱ Pausar"; nextOsi(); state.autoTimer = setInterval(nextOsi, 1250); });
+  $("#osi-auto").addEventListener("click", () => { if (state.autoTimer) return stopAuto(); $("#osi-auto").textContent = "Ⅱ Pausar"; nextOsi(); state.autoTimer = setInterval(nextOsi, 2600); });
 
   let usedQuestions = [];
   function showQuestion() {
