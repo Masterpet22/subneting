@@ -1,27 +1,204 @@
-(function(){
-const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
-const state={correct:0,attempts:0,sound:false,step:-1,subnet:null,lab:null};
-const layers=[[7,"Aplicación","Datos","Servicios de usuario: HTTP, DNS y SMTP."],[6,"Presentación","Datos","Formato, compresión y cifrado; es una abstracción OSI."],[5,"Sesión","Datos","Coordina diálogos; TCP/IP agrupa esta función."],[4,"Transporte","Segmento / datagrama","Puertos y comunicación proceso a proceso."],[3,"Red","Paquete","IP lógico y enrutamiento entre redes."],[2,"Enlace","Trama","MAC local y FCS dentro de un enlace."],[1,"Física","Bits","Señales eléctricas, ópticas o de radio."]];
-function buildOsiRoute(){const route=document.createElement("ol");route.className="osi-route";[["01","Datos"],["02","Segmento"],["03","Paquete"],["04","Trama"],["05","Bits"]].forEach((item,index)=>{const step=document.createElement("li");step.dataset.route=index;step.innerHTML="<span>"+item[0]+"</span>"+item[1];route.append(step)});$(".sim-controls").after(route)}
-const qs=[["Un router recibe una trama. ¿Qué consulta para elegir la siguiente red?","La IP destino del paquete","La MAC destino","El puerto TCP","El router toma la decisión con la IP destino del paquete."],["¿Cómo se llama normalmente la PDU de TCP?","Segmento","Trama","Paquete","TCP usa segmentos; UDP se denomina datagrama."],["Antes de enviar una trama Ethernet local, ¿qué necesita conocer el emisor?","La MAC del siguiente salto","La tabla BGP","El puerto físico","ARP permite resolver IPv4 a MAC dentro del enlace."],["¿Qué ocurre con la MAC al pasar por un router?","Se reemplaza en cada enlace","No cambia hasta el destino","Se convierte en IP","Cada salto crea una trama nueva."],["¿Cuál afirmación es correcta?","TLS se asocia conceptualmente a presentación, pero TCP/IP no la separa","TLS es siempre capa 6","ARP enruta paquetes IP","OSI es conceptual; las implementaciones TCP/IP no coinciden uno a uno."]];
-function update(){ $("#session-score").textContent=state.correct;$("#session-progress").style.width=(state.attempts?state.correct/state.attempts*100:0)+"%";$("#session-detail").textContent=state.attempts?state.correct+" de "+state.attempts+" respuestas correctas en esta sesión.":"Elige un laboratorio para comenzar."}
-function blip(kind="step",level=4){if(!state.sound)return;try{const C=window.AudioContext||window.webkitAudioContext;state.audio||(state.audio=new C());const c=state.audio,o=c.createOscillator(),g=c.createGain(),now=c.currentTime,base={7:660,6:590,5:520,4:470,3:410,2:350,1:280}[level]||440;o.type=kind==="good"?"sine":"triangle";o.frequency.setValueAtTime(kind==="bad"?170:base,now);o.frequency.exponentialRampToValueAtTime(kind==="good"?base*1.4:base*.82,now+.11);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(kind==="good"?.08:.045,now+.02);g.gain.exponentialRampToValueAtTime(.0001,now+.16);o.connect(g).connect(c.destination);o.start(now);o.stop(now+.17)}catch(e){}}
-function score(ok){state.attempts++;if(ok)state.correct++;blip(ok?"good":"bad");update()}
-function go(id){$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));$$(".nav-link").forEach(x=>x.classList.toggle("active",x.dataset.view===id));scrollTo({top:0,behavior:"smooth"})}$$("[data-view]").forEach(x=>x.onclick=()=>go(x.dataset.view));$$("[data-go]").forEach(x=>x.onclick=()=>go(x.dataset.go));
-$("#sound-toggle").onclick=e=>{state.sound=!state.sound;e.currentTarget.textContent=state.sound?"♫":"♬";e.currentTarget.setAttribute("aria-pressed",state.sound);e.currentTarget.setAttribute("aria-label",state.sound?"Silenciar sonidos":"Activar sonidos");if(state.sound)blip("good",7)};
-function num(ip){return ip.split(".").reduce((a,x)=>a*256+Number(x),0)>>>0}function ip(n){return [24,16,8,0].map(x=>(n>>>x)&255).join(".")}function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}function msk(c){return (0xffffffff<<(32-c))>>>0}
-function newSubnet(){let lv=$("#subnet-level").value,c=lv==="beginner"?[24,25,26][rnd(0,2)]:lv==="intermediate"?rnd(20,30):rnd(16,30),base=lv==="challenge"?[[10,rnd(0,255),rnd(0,255)],[172,rnd(16,31),rnd(0,255)],[192,168,rnd(0,255)]][rnd(0,2)]:[192,168,rnd(1,30)],host=base.concat(rnd(1,254)),n=num(host.join(".")),network=(n&msk(c))>>>0,broad=(network+Math.pow(2,32-c)-1)>>>0;state.subnet={c:c,n:network,b:broad};$("#subnet-problem").textContent=host.join(".")+" /"+c;$("#subnet-context").textContent="Calcula red, primer y último host, y broadcast. "+(Math.pow(2,32-c)-2)+" hosts utilizables.";$$(".answer-grid input").forEach(x=>{x.value="";x.className=""});$("#subnet-feedback").textContent="";$("#subnet-hint-box").classList.add("hidden")}
-function hint(){let a=state.subnet,o=Math.floor((a.c-1)/8),mo=(msk(a.c)>>>((3-o)*8))&255;$("#subnet-hint-box").innerHTML="<strong>Pista:</strong> octeto "+(o+1)+", máscara <strong>"+mo+"</strong>, bloque <strong>"+(256-mo)+"</strong>. La red inicia en <strong>"+ip(a.n)+"</strong>.";$("#subnet-hint-box").classList.remove("hidden")}
-function checkSubnet(){let a=state.subnet,w={network:ip(a.n),first:ip(a.n+1),last:ip(a.b-1),broadcast:ip(a.b)},ids={network:"#answer-network",first:"#answer-first",last:"#answer-last",broadcast:"#answer-broadcast"},good=0;Object.keys(ids).forEach(k=>{let e=$(ids[k]),ok=e.value.trim()===w[k];e.className=ok?"correct":"wrong";if(ok)good++});score(good===4);let f=$("#subnet-feedback");f.className="feedback "+(good===4?"good":"bad");f.textContent=good===4?"¡Excelente! Calculaste toda la subred correctamente.":"Tienes "+good+"/4. Revisa la pista y vuelve a intentarlo."}
-$("#new-subnet").onclick=newSubnet;$("#subnet-level").onchange=newSubnet;$("#subnet-hint").onclick=hint;$("#check-subnet").onclick=checkSubnet;
-function stacks(active,receiver){let h=receiver?$("#receiver-stack"):$("#sender-stack");h.textContent="";layers.forEach(l=>{let e=document.createElement("div");e.className="layer layer-"+l[0]+(active===l[0]?" active":"");e.innerHTML="<span>"+l[0]+". "+l[1]+"</span><b>"+l[2]+"</b>";h.append(e)})}
-function part(t,c){let e=document.createElement("span");e.className="pdu-part "+c;e.textContent=t;return e}
-function renderOSI(){let seq=[7,6,5,4,3,2,1,0,1,2,3,4,5,6,7],s=state.step,l=seq[s],box=$("#pdu-visual"),stage=$(".pdu-stage"),msg=$("#osi-message").value.trim()||"Datos de aplicación",title="Datos",dir="LISTO PARA ENCAPSULAR",desc="Avanza paso a paso para observar cómo se añaden o retiran encabezados.";stage.className="pdu-stage "+(l?"layer-active layer-tone-"+l:"");stacks(s>=0&&s<=6?l:null,false);stacks(s>=8?l:null,true);box.textContent="";if(s===7){title="Bits";dir="MEDIO FÍSICO · SEÑAL EN TRÁNSITO";desc="La trama se codifica como señales por cobre, fibra o radio.";box.append(part("01010010 01000101 01000100","bits"))}else if(s>=0&&s<=6){let x=layers[7-l];title=x[2];dir="EMISOR · CAPA "+l;desc=x[3];if(l<=2)box.append(part("MAC","mac"));if(l===2)box.append(part("FCS","fcs"));if(l<=3)box.append(part("IP","ip"));if(l<=4)box.append(part("TCP / UDP","tcp"));box.append(part(msg,"app"))}else if(s>=8){let x=layers[7-l];title=x[2];dir="RECEPTOR · CAPA "+l;desc=l===2?"Se valida FCS y se retira la trama; queda el paquete IP.":l===3?"Se procesa IP destino y se entrega a transporte.":l===4?"Los puertos entregan datos al proceso correcto.":x[3];box.append(part(l<2?"MAC retirado":"MAC","mac"));if(l<3)box.append(part("IP retirado","ip"));if(l<4)box.append(part("TCP / UDP retirado","tcp"));box.append(part(msg,"app"))}$("#pdu-name").textContent=title;$("#osi-direction").textContent=dir;$("#osi-explanation").textContent=desc;$("#osi-insight").innerHTML="<h3>"+title+"</h3><p>"+desc+"</p>"}
-const baseRenderOSI=renderOSI;renderOSI=function(){baseRenderOSI();const level=[7,6,5,4,3,2,1,0,1,2,3,4,5,6,7][state.step],routeIndex={7:0,6:0,5:0,4:1,3:2,2:3,1:4}[level];$$(".osi-route li").forEach((item,index)=>item.classList.toggle("active",index===routeIndex))};
-$("#osi-step").onclick=()=>{state.step=state.step>=14?0:state.step+1;renderOSI();blip("step",[7,6,5,4,3,2,1,1,1,2,3,4,5,6,7][state.step])};$("#osi-reset").onclick=()=>{state.step=-1;renderOSI()};$("#osi-message").oninput=renderOSI;
-let used=[];function showQ(){if(used.length===qs.length)used=[];let n;do{n=rnd(0,qs.length-1)}while(used.includes(n));used.push(n);let q=qs[n],wrap=$("#osi-options");$("#osi-question").textContent=q[0];wrap.textContent="";$("#osi-quiz-feedback").textContent="";$("#osi-quiz-feedback").className="feedback";$("#next-osi-question").classList.add("hidden");[q[1],q[2],q[3]].sort(()=>Math.random()-.5).forEach(o=>{let b=document.createElement("button");b.textContent=o;b.onclick=()=>{let ok=o===q[1];Array.from(wrap.children).forEach(x=>{x.disabled=true;if(x.textContent===q[1])x.classList.add("correct")});if(!ok)b.classList.add("wrong");score(ok);let f=$("#osi-quiz-feedback");f.className="feedback "+(ok?"good":"bad");f.textContent=(ok?"¡Correcto! ":"Aún no. ")+q[4];$("#next-osi-question").classList.remove("hidden")};wrap.append(b)})}$("#next-osi-question").onclick=showQ;
-function newLab(){let c=[24,25,26,27][rnd(0,3)],n=num("192.168."+rnd(1,20)+".0")&msk(c),z=Math.pow(2,32-c),same=Math.random()>.5,src=n+rnd(2,z-3),dst=same?n+rnd(2,z-3):n+z+rnd(2,z-3);state.lab={same:same};$("#lab-source").textContent=ip(src);$("#lab-destination").textContent=ip(dst);$("#lab-prefix").textContent="Ambos hosts usan máscara /"+c+". Calcula su red antes de decidir.";$("#lab-followup").classList.add("hidden");$("#lab-feedback").textContent="";$$(".integrated-card .options button").forEach(x=>{x.disabled=false;x.className=""})}
-$("#lab-network-options").onclick=e=>{let b=e.target.closest("button");if(!b)return;let ok=(b.dataset.answer==="same")===state.lab.same;Array.from($("#lab-network-options").children).forEach(x=>x.disabled=true);score(ok);b.className=ok?"correct":"wrong";let f=$("#lab-feedback");f.className="feedback "+(ok?"good":"bad");f.textContent=ok?(state.lab.same?"Correcto: Host A resuelve la MAC de Host B y envía una trama local.":"Correcto: Host A envía la trama hacia la MAC del gateway."):"No exactamente. Aplica la máscara a ambas IP y compara las redes." ;$("#lab-followup").classList.remove("hidden")};
-$("#lab-pdu-options").onclick=e=>{let b=e.target.closest("button");if(!b)return;let ok=b.dataset.answer==="packet";Array.from($("#lab-pdu-options").children).forEach(x=>{x.disabled=true;if(x.dataset.answer==="packet")x.className="correct"});if(!ok)b.className="wrong";score(ok);let f=$("#lab-feedback");f.className="feedback "+(ok?"good":"bad");f.textContent+=(ok?" El router consulta IP destino del paquete y crea una nueva trama para el siguiente enlace.":" El router decide principalmente usando la IP destino del paquete.")};
-$("#new-lab").onclick=newLab;buildOsiRoute();newSubnet();renderOSI();showQ();newLab();update()
+(() => {
+  const $ = (selector) => document.querySelector(selector);
+  const $$ = (selector) => [...document.querySelectorAll(selector)];
+  const state = { sound: true, audio: null, subnet: null, osiIndex: -1, autoTimer: null, lab: null };
+
+  const layers = [
+    { level: 7, name: "Aplicación", pdu: "Datos", color: "#b779f4", detail: "La aplicación crea el mensaje usando servicios como HTTP, DNS o SMTP." },
+    { level: 6, name: "Presentación", pdu: "Datos", color: "#e76bb4", detail: "Los datos pueden transformarse, comprimirse o cifrarse." },
+    { level: 5, name: "Sesión", pdu: "Datos", color: "#ff7d83", detail: "Se coordina el diálogo entre aplicaciones. TCP/IP agrupa esta función." },
+    { level: 4, name: "Transporte", pdu: "Segmento", color: "#fd9c58", detail: "TCP o UDP añade puertos para entregar los datos al proceso correcto." },
+    { level: 3, name: "Red", pdu: "Paquete", color: "#a7e667", detail: "IP añade direccionamiento lógico para viajar entre redes." },
+    { level: 2, name: "Enlace", pdu: "Trama", color: "#52e8dd", detail: "Ethernet añade direcciones MAC y una comprobación FCS para el enlace local." },
+    { level: 1, name: "Física", pdu: "Bits", color: "#68a7ff", detail: "La trama se representa mediante señales eléctricas, ópticas o de radio." }
+  ];
+
+  const questions = [
+    { q: "¿Qué consulta principalmente un router para elegir el siguiente salto?", options: ["La IP destino", "La MAC final", "El puerto TCP"], answer: 0, why: "El router decide con la IP destino del paquete. Después construye una trama nueva para el siguiente enlace." },
+    { q: "¿Cómo se llama normalmente la PDU de TCP?", options: ["Segmento", "Trama", "Paquete"], answer: 0, why: "TCP usa segmentos; para UDP se suele usar el término datagrama." },
+    { q: "¿Qué dirección cambia normalmente al atravesar un router?", options: ["Las MAC de la trama", "La IP destino", "El puerto de aplicación"], answer: 0, why: "Las MAC pertenecen al enlace local y se reemplazan en cada salto. La IP identifica los extremos." },
+    { q: "¿Para qué sirve ARP en una red IPv4 local?", options: ["Resolver una IP a una MAC", "Elegir una ruta BGP", "Asignar puertos TCP"], answer: 0, why: "ARP permite conocer la MAC que corresponde a una IPv4 dentro del enlace local." },
+    { q: "¿Cuál es el orden de encapsulación correcto?", options: ["Datos → Segmento → Paquete → Trama → Bits", "Bits → Trama → Datos → Paquete", "Datos → Paquete → Segmento → Bits"], answer: 0, why: "Cada capa inferior envuelve la información recibida de la capa superior." }
+  ];
+
+  function go(view) {
+    $$(".view").forEach((section) => section.classList.toggle("active", section.id === view));
+    $$(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (view !== "osi") stopAuto();
+  }
+  $$("[data-view], [data-go]").forEach((button) => button.addEventListener("click", (event) => {
+    event.preventDefault();
+    go(button.dataset.view || button.dataset.go);
+    sound("nav");
+  }));
+
+  function sound(kind = "step", level = 4) {
+    if (!state.sound) return;
+    try {
+      const AudioEngine = window.AudioContext || window.webkitAudioContext;
+      if (!state.audio) state.audio = new AudioEngine();
+      const context = state.audio;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const frequencies = { 7: 660, 6: 590, 5: 530, 4: 470, 3: 410, 2: 350, 1: 285 };
+      const base = kind === "bad" ? 155 : (frequencies[level] || 440);
+      oscillator.type = kind === "good" ? "sine" : "triangle";
+      oscillator.frequency.setValueAtTime(base, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(kind === "good" ? base * 1.45 : base * .88, context.currentTime + .12);
+      gain.gain.setValueAtTime(.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(kind === "good" ? .075 : .04, context.currentTime + .02);
+      gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + .17);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(); oscillator.stop(context.currentTime + .18);
+    } catch (_) { /* visual feedback remains available */ }
+  }
+  $("#sound-toggle").addEventListener("click", (event) => {
+    state.sound = !state.sound;
+    event.currentTarget.classList.toggle("on", state.sound);
+    event.currentTarget.setAttribute("aria-pressed", String(state.sound));
+    event.currentTarget.querySelector("small").textContent = state.sound ? "ON" : "OFF";
+    if (state.sound) sound("good", 7);
+  });
+
+  const ipToNumber = (ip) => ip.split(".").reduce((total, octet) => total * 256 + Number(octet), 0) >>> 0;
+  const numberToIp = (number) => [24, 16, 8, 0].map((shift) => (number >>> shift) & 255).join(".");
+  const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const maskFor = (cidr) => (0xffffffff << (32 - cidr)) >>> 0;
+  const toBinary = (ip) => ip.split(".").map((part) => Number(part).toString(2).padStart(8, "0")).join(" · ");
+
+  function newSubnet() {
+    const difficulty = $("#subnet-level").value;
+    const cidr = difficulty === "beginner" ? [24, 25, 26][random(0, 2)] : difficulty === "intermediate" ? random(20, 30) : random(16, 30);
+    const pools = difficulty === "challenge" ? [[10, random(0, 255), random(0, 255)], [172, random(16, 31), random(0, 255)], [192, 168, random(0, 255)]] : [[192, 168, random(1, 40)]];
+    const address = [...pools[random(0, pools.length - 1)], random(1, 254)].join(".");
+    const addressNumber = ipToNumber(address);
+    const network = (addressNumber & maskFor(cidr)) >>> 0;
+    const blockSize = 2 ** (32 - cidr);
+    state.subnet = { address, cidr, network, broadcast: (network + blockSize - 1) >>> 0 };
+    $("#subnet-problem").textContent = `${address} /${cidr}`;
+    $(".binary-decoration").textContent = toBinary(address);
+    $("#subnet-context").textContent = `${blockSize - 2} hosts utilizables · máscara ${numberToIp(maskFor(cidr))}`;
+    $$(".answer-grid input").forEach((input) => { input.value = ""; input.className = ""; });
+    $("#subnet-feedback").textContent = "";
+    $("#subnet-hint-box").classList.add("hidden");
+    sound("nav");
+  }
+  function showSubnetHint() {
+    const { cidr, network } = state.subnet;
+    const interestingOctet = Math.floor((cidr - 1) / 8);
+    const maskOctet = (maskFor(cidr) >>> ((3 - interestingOctet) * 8)) & 255;
+    const box = $("#subnet-hint-box");
+    box.textContent = `Octeto interesante: ${interestingOctet + 1}. Máscara: ${maskOctet}. Salto: ${256 - maskOctet}. La red comienza en ${numberToIp(network)}.`;
+    box.classList.remove("hidden"); sound("step", 2);
+  }
+  function checkSubnet() {
+    const { network, broadcast } = state.subnet;
+    const expected = { network: numberToIp(network), first: numberToIp(network + 1), last: numberToIp(broadcast - 1), broadcast: numberToIp(broadcast) };
+    let correct = 0;
+    Object.entries(expected).forEach(([key, value]) => {
+      const input = $(`#answer-${key}`); const matches = input.value.trim() === value;
+      input.className = matches ? "correct" : "wrong"; if (matches) correct += 1;
+    });
+    const feedback = $("#subnet-feedback"); const allCorrect = correct === 4;
+    feedback.className = `feedback ${allCorrect ? "good" : "bad"}`;
+    feedback.textContent = allCorrect ? "¡Perfecto! Encontraste los cuatro límites de la subred." : `${correct}/4 correctas. Observa el salto y revisa los límites del bloque.`;
+    sound(allCorrect ? "good" : "bad");
+  }
+  $("#new-subnet").addEventListener("click", newSubnet); $("#subnet-level").addEventListener("change", newSubnet);
+  $("#subnet-hint").addEventListener("click", showSubnetHint); $("#check-subnet").addEventListener("click", checkSubnet);
+
+  const osiSteps = [];
+  [7, 6, 5, 4, 3, 2, 1].forEach((level) => osiSteps.push({ direction: "A → B", activeHost: "a", action: "encapsula", level }));
+  osiSteps.push({ direction: "A → B", activeHost: "wire", action: "transmite", level: 1 });
+  [1, 2, 3, 4, 5, 6, 7].forEach((level) => osiSteps.push({ direction: "A → B", activeHost: "b", action: "desencapsula", level }));
+  [7, 6, 5, 4, 3, 2, 1].forEach((level) => osiSteps.push({ direction: "B → A", activeHost: "b", action: "encapsula", level }));
+  osiSteps.push({ direction: "B → A", activeHost: "wire", action: "transmite", level: 1 });
+  [1, 2, 3, 4, 5, 6, 7].forEach((level) => osiSteps.push({ direction: "B → A", activeHost: "a", action: "desencapsula", level }));
+
+  function buildStack(container, activeLevel) {
+    container.textContent = "";
+    layers.forEach((layer) => {
+      const item = document.createElement("div");
+      item.className = `layer layer-${layer.level}${activeLevel === layer.level ? " active" : ""}`;
+      const name = document.createElement("span"); name.textContent = `${layer.level}. ${layer.name}`;
+      const pdu = document.createElement("b"); pdu.textContent = layer.pdu;
+      item.append(name, pdu); container.append(item);
+    });
+  }
+  function pduPart(label, className) { const part = document.createElement("span"); part.className = `pdu-part ${className}`; part.textContent = label; return part; }
+  function routeStage(level) { return level >= 5 ? 0 : level === 4 ? 1 : level === 3 ? 2 : level === 2 ? 3 : 4; }
+  function renderOsi() {
+    const step = state.osiIndex < 0 ? null : osiSteps[state.osiIndex];
+    const layer = step ? layers.find((item) => item.level === step.level) : layers[0];
+    const activeA = step?.activeHost === "a" ? step.level : null;
+    const activeB = step?.activeHost === "b" ? step.level : null;
+    buildStack($("#sender-stack"), activeA); buildStack($("#receiver-stack"), activeB);
+    $("#flow-summary").textContent = step ? `Host ${step.direction}` : "Host A → Host B";
+    $("#host-a-action").textContent = step?.direction === "B → A" ? "Recibe la respuesta" : "Encapsula hacia el medio";
+    $("#host-b-action").textContent = step?.direction === "B → A" ? "Encapsula la respuesta" : "Recibe desde el medio";
+    const stage = step ? routeStage(step.level) : -1;
+    $$("#osi-route li").forEach((item, index) => { item.classList.toggle("active", index === stage); item.classList.toggle("done", index < stage); });
+    $$(".step-meter i").forEach((item, index) => item.classList.toggle("active", step && index === (step.action === "desencapsula" ? step.level - 1 : 7 - step.level)));
+    const panel = $(".pdu-stage"); panel.style.setProperty("--active-color", layer.color);
+    const message = $("#osi-message").value.trim() || "Datos de aplicación";
+    const visual = $("#pdu-visual"); visual.textContent = "";
+    if (!step) {
+      $("#osi-direction").textContent = "LISTO PARA ENCAPSULAR"; $("#pdu-name").textContent = "Datos";
+      $("#osi-explanation").textContent = "Pulsa “Siguiente paso” para iniciar el recorrido."; visual.append(pduPart(message, "app"));
+    } else if (step.activeHost === "wire") {
+      $("#osi-direction").textContent = `MEDIO FÍSICO · ${step.direction}`; $("#pdu-name").textContent = "Bits en tránsito";
+      $("#osi-explanation").textContent = "La señal cruza el medio y conserva la trama codificada."; visual.append(pduPart("01010010 01000101 01000100", "bits"));
+    } else {
+      const host = step.activeHost.toUpperCase(); const verb = step.action === "encapsula" ? "ENCAPSULANDO" : "DESENCAPSULANDO";
+      $("#osi-direction").textContent = `HOST ${host} · ${verb} · CAPA ${step.level}`; $("#pdu-name").textContent = layer.pdu;
+      $("#osi-explanation").textContent = layer.detail;
+      if (step.level <= 2) visual.append(pduPart("MAC", "mac"));
+      if (step.level === 2) visual.append(pduPart("FCS", "fcs"));
+      if (step.level <= 3) visual.append(pduPart("IP", "ip"));
+      if (step.level <= 4) visual.append(pduPart("TCP / UDP", "tcp"));
+      visual.append(pduPart(message, "app"));
+    }
+    $("#osi-insight").replaceChildren();
+    const title = document.createElement("h3"); title.textContent = layer.name;
+    const description = document.createElement("p"); description.textContent = layer.detail;
+    $("#osi-insight").append(title, description);
+  }
+  function nextOsi() { state.osiIndex = (state.osiIndex + 1) % osiSteps.length; renderOsi(); sound("step", osiSteps[state.osiIndex].level); }
+  function stopAuto() { if (state.autoTimer) clearInterval(state.autoTimer); state.autoTimer = null; const button = $("#osi-auto"); if (button) button.textContent = "▶ Automático"; }
+  $("#osi-step").addEventListener("click", nextOsi);
+  $("#osi-reset").addEventListener("click", () => { stopAuto(); state.osiIndex = -1; renderOsi(); sound("nav"); });
+  $("#osi-message").addEventListener("input", renderOsi);
+  $("#osi-auto").addEventListener("click", () => { if (state.autoTimer) return stopAuto(); $("#osi-auto").textContent = "Ⅱ Pausar"; nextOsi(); state.autoTimer = setInterval(nextOsi, 1250); });
+
+  let usedQuestions = [];
+  function showQuestion() {
+    if (usedQuestions.length === questions.length) usedQuestions = [];
+    let index; do { index = random(0, questions.length - 1); } while (usedQuestions.includes(index)); usedQuestions.push(index);
+    const question = questions[index]; $("#osi-question").textContent = question.q;
+    const options = question.options.map((text, originalIndex) => ({ text, correct: originalIndex === question.answer })).sort(() => Math.random() - .5);
+    const container = $("#osi-options"); container.textContent = ""; $("#osi-quiz-feedback").textContent = ""; $("#next-osi-question").classList.add("hidden");
+    options.forEach((option) => { const button = document.createElement("button"); button.textContent = option.text; button.addEventListener("click", () => { [...container.children].forEach((item) => { item.disabled = true; if (item.textContent === question.options[question.answer]) item.classList.add("correct"); }); if (!option.correct) button.classList.add("wrong"); const feedback = $("#osi-quiz-feedback"); feedback.className = `feedback ${option.correct ? "good" : "bad"}`; feedback.textContent = `${option.correct ? "¡Correcto!" : "Casi."} ${question.why}`; $("#next-osi-question").classList.remove("hidden"); sound(option.correct ? "good" : "bad"); }); container.append(button); });
+  }
+  $("#next-osi-question").addEventListener("click", showQuestion);
+
+  function newLab() {
+    const cidr = [24, 25, 26, 27][random(0, 3)]; const mask = maskFor(cidr); const network = (ipToNumber(`192.168.${random(1, 30)}.0`) & mask) >>> 0; const size = 2 ** (32 - cidr); const same = Math.random() > .5;
+    const source = network + random(2, size - 3); const destination = same ? network + random(2, size - 3) : network + size + random(2, size - 3);
+    state.lab = { same }; $("#lab-source").textContent = numberToIp(source); $("#lab-destination").textContent = numberToIp(destination); $("#lab-prefix").textContent = `Máscara /${cidr} · ${numberToIp(mask)} · compara las direcciones de red.`;
+    $("#lab-followup").classList.add("locked"); $("#lab-feedback").textContent = ""; $$(".network-lab .options button").forEach((button) => { button.disabled = false; button.className = ""; });
+  }
+  $("#lab-network-options").addEventListener("click", (event) => { const button = event.target.closest("button"); if (!button) return; const correct = (button.dataset.answer === "same") === state.lab.same; $$("#lab-network-options button").forEach((item) => item.disabled = true); button.classList.add(correct ? "correct" : "wrong"); const feedback = $("#lab-feedback"); feedback.className = `feedback ${correct ? "good" : "bad"}`; feedback.textContent = correct ? (state.lab.same ? "Correcto: el host resuelve directamente la MAC del destino." : "Correcto: la trama debe dirigirse a la MAC del gateway.") : "Aplica la máscara a ambas IP y vuelve a comparar sus redes."; $("#lab-followup").classList.remove("locked"); sound(correct ? "good" : "bad"); });
+  $("#lab-pdu-options").addEventListener("click", (event) => {
+    const button = event.target.closest("button"); if (!button) return;
+    const correct = button.dataset.answer === "packet";
+    $$("#lab-pdu-options button").forEach((item) => { item.disabled = true; if (item.dataset.answer === "packet") item.classList.add("correct"); });
+    if (!correct) button.classList.add("wrong");
+    const feedback = $("#lab-feedback"); feedback.className = `feedback ${correct ? "good" : "bad"}`;
+    feedback.textContent += correct ? " El router consulta la IP destino del paquete y crea una trama nueva para el siguiente enlace." : " El router toma la decisión con el paquete IP, no con el puerto ni con la MAC final.";
+    sound(correct ? "good" : "bad");
+  });
+  $("#new-lab").addEventListener("click", () => { newLab(); sound("nav"); });
+
+  newSubnet(); renderOsi(); showQuestion(); newLab();
 })();
