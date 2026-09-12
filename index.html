@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Subnetting - CCNA</title>
+    <style>
+        :root {
+            --primary: #005073;
+            --secondary: #107dac;
+            --background: #f4f7f6;
+            --surface: #ffffff;
+            --text: #333333;
+            --success: #28a745;
+            --error: #dc3545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            margin: 0;
+        }
+
+        .card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        .problem-box {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        input {
+            padding: 0.8rem;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--secondary);
+            outline: none;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-check {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-check:hover { background-color: var(--secondary); }
+
+        .btn-next {
+            background-color: #e0e0e0;
+            color: var(--text);
+        }
+
+        .btn-next:hover { background-color: #d0d0d0; }
+
+        .feedback {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        .correct { color: var(--success); }
+        .incorrect { color: var(--error); }
+        input.correct-input { border-color: var(--success); background-color: #f8fff8; }
+        input.incorrect-input { border-color: var(--error); background-color: #fff8f8; }
+
+        .cheatsheet {
+            margin-top: 2rem;
+            border-top: 2px dashed #ccc;
+            padding-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Práctica de Subnetting</h1>
+        
+        <div class="problem-box" id="ip-display">
+            Cargando IP...
+        </div>
+
+        <div class="form-group">
+            <label>Dirección de Red (Ej. 192.168.1.0)</label>
+            <input type="text" id="in-network" placeholder="Ingresa la IP de red">
+            <div class="feedback" id="feed-network"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Primera IP Utilizable</label>
+            <input type="text" id="in-first" placeholder="Ingresa la primera IP">
+            <div class="feedback" id="feed-first"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Última IP Utilizable</label>
+            <input type="text" id="in-last" placeholder="Ingresa la última IP">
+            <div class="feedback" id="feed-last"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Dirección de Broadcast</label>
+            <input type="text" id="in-broadcast" placeholder="Ingresa la IP de broadcast">
+            <div class="feedback" id="feed-broadcast"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-check" onclick="checkAnswers()">Comprobar Respuestas</button>
+            <button class="btn-next" onclick="generateProblem()">Siguiente Problema</button>
+        </div>
+
+        <div class="cheatsheet">
+            <strong>Tabla de Ayuda Rápida (4to Octeto)</strong>
+            <table>
+                <tr>
+                    <th>CIDR</th>
+                    <th>/24</th><th>/25</th><th>/26</th><th>/27</th><th>/28</th><th>/29</th><th>/30</th>
+                </tr>
+                <tr>
+                    <th>Máscara</th>
+                    <td>.0</td><td>.128</td><td>.192</td><td>.224</td><td>.240</td><td>.248</td><td>.252</td>
+                </tr>
+                <tr>
+                    <th>Salto</th>
+                    <td>256</td><td>128</td><td>64</td><td>32</td><td>16</td><td>8</td><td>4</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let currentAnswers = {};
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateProblem() {
+            // Limpiar inputs
+            const inputs = ['network', 'first', 'last', 'broadcast'];
+            inputs.forEach(id => {
+                document.getElementById(`in-${id}`).value = '';
+                document.getElementById(`in-${id}`).className = '';
+                document.getElementById(`feed-${id}`).textContent = '';
+            });
+
+            // Generar IP aleatoria (enfocada en Clase C para practicar el 4to octeto)
+            const octet1 = 192;
+            const octet2 = 168;
+            const octet3 = getRandomInt(1, 20);
+            const octet4 = getRandomInt(1, 254);
+            const cidr = getRandomInt(25, 30); // /25 a /30 para forzar el cálculo
+
+            const ipString = `${octet1}.${octet2}.${octet3}.${octet4} /${cidr}`;
+            document.getElementById('ip-display').textContent = `IP: ${ipString}`;
+
+            // Calcular respuestas correctas
+            const magicNumber = Math.pow(2, 32 - cidr);
+            const networkOctet4 = Math.floor(octet4 / magicNumber) * magicNumber;
+            const broadcastOctet4 = networkOctet4 + magicNumber - 1;
+
+            const baseIp = `${octet1}.${octet2}.${octet3}.`;
+            
+            currentAnswers = {
+                network: baseIp + networkOctet4,
+                first: baseIp + (networkOctet4 + 1),
+                last: baseIp + (broadcastOctet4 - 1),
+                broadcast: baseIp + broadcastOctet4
+            };
+        }
+
+        function checkField(id, correctAnswer) {
+            const inputEl = document.getElementById(`in-${id}`);
+            const feedbackEl = document.getElementById(`feed-${id}`);
+            const userValue = inputEl.value.trim();
+
+            if (userValue === correctAnswer) {
+                inputEl.className = 'correct-input';
+                feedbackEl.textContent = '¡Correcto!';
+                feedbackEl.className = 'feedback correct';
+            } else {
+                inputEl.className = 'incorrect-input';
+                feedbackEl.textContent = `Incorrecto. La respuesta es: ${correctAnswer}`;
+                feedbackEl.className = 'feedback incorrect';
+            }
+        }
+
+        function checkAnswers() {
+            checkField('network', currentAnswers.network);
+            checkField('first', currentAnswers.first);
+            checkField('last', currentAnswers.last);
+            checkField('broadcast', currentAnswers.broadcast);
+        }
+
+        // Generar el primer problema al cargar la página
+        window.onload = generateProblem;
+    </script>
+</body>
+</html>
