@@ -19,5 +19,145 @@ footer{display:flex;align-items:center;justify-content:space-between;gap:1rem;pa
 :root{--muted:#c3c7d4;--line:#3b4054}body{font-size:16px}.kicker{font-size:.78rem;line-height:1.45}.logo small{font-size:.65rem;color:#aeb3c3}.nav-item{font-size:.9rem}.sound-toggle b{font-size:.8rem}.sound-toggle small{font-size:.7rem}.hero-copy>p{font-size:1.16rem;color:#ced1dc}.hero-meta{font-size:.88rem;color:#b5bac9}.hero-meta b{font-size:1rem}.path-heading>p,.path-card>p{font-size:1rem;color:#c4c8d4}.path-card>p{line-height:1.65}.feature-row span{font-size:.75rem}.path-card>button{font-size:1rem}.module-header>div:first-child>p{font-size:1.08rem;color:#c9ccd7}.module-index{font-size:.72rem}.level-bar small,.console-controls small{font-size:.72rem;color:#b6bac8}.level-bar label{font-size:1rem}.level-bar select{font-size:.95rem}.panel-heading span{font-size:.8rem}.panel-heading small{font-size:.86rem;color:#c0c4d0}.ip-question>small{font-size:.75rem;color:#c2c6d2}.binary-decoration{font-size:.75rem;color:#7f869c}.answer-grid label>span{font-size:.72rem;color:#d0d3dd}.answer-grid label>div{font-size:.95rem}.answer-grid label small{font-size:.78rem;color:#aeb3c2}.answer-grid input{font-size:1rem}.coach-head small,.formula-card small{font-size:.7rem}.coach-panel li b{font-size:.95rem}.coach-panel li p{font-size:.82rem;color:#b7bbc9}.hint-box,.formula-card,.formula-card code{font-size:.88rem}.console-controls input{font-size:1rem}.osi-route li b{font-size:.86rem}.osi-route li small{font-size:.72rem;color:#adb2c1}.host-title b{font-size:.84rem}.host-title small{font-size:.72rem;color:#aeb3c2}.layer{min-height:44px;font-size:.82rem;color:#d7d9e2}.layer b{font-size:.72rem;color:#f0f1f5}.pdu-stage>p{font-size:.92rem;color:#d0d3dc;line-height:1.55}.pdu-stage>#osi-direction{font-size:.75rem}.pdu-part{font-size:.72rem}.insight-head small,.quiz-title>span{font-size:.7rem}.insight-panel p{font-size:.95rem;color:#c9ccd7;line-height:1.6}.micro-facts span{font-size:.75rem;color:#c5c9d5}.quiz-title h2{font-size:1.2rem;line-height:1.45}.options button{font-size:.9rem;line-height:1.45}.feedback{font-size:.9rem}.device b{font-size:.82rem}.device code{display:block;margin-top:.45rem;padding:.42rem .55rem;border:1px solid color-mix(in srgb,var(--cyan) 48%,transparent);border-radius:.38rem;background:#070b12;color:#fff;font:700 1rem Space Mono;text-shadow:0 0 10px #52e8dd55}.device small{font-size:.78rem;color:#c1c5d2}.scenario-context{font-size:.9rem;color:#d4d6df}.lab-questions small{font-size:.7rem;color:#aeb3c2}.lab-questions h2{font-size:1.1rem;line-height:1.4}.question-number{font-size:.75rem}footer{font-size:.8rem;color:#9fa4b5}
 .osi-stage{position:relative;overflow:hidden}.osi-stage::after{content:"▰";position:absolute;z-index:5;top:49%;left:18%;color:var(--gold);font-size:1.1rem;filter:drop-shadow(0 0 9px var(--gold));opacity:0;pointer-events:none}.osi-stage.travel-ab::after{opacity:1;animation:osiTravelRight 5.2s ease-in-out infinite}.osi-stage.travel-ba::after{left:auto;right:18%;opacity:1;animation:osiTravelLeft 5.2s ease-in-out infinite}.pdu-core{animation:pduDrift 5.2s ease-in-out infinite}.energy-lines{animation-duration:10s}
 @keyframes osiTravelRight{0%,12%{left:18%;opacity:.15}50%{opacity:1}88%,100%{left:80%;opacity:.15}}@keyframes osiTravelLeft{0%,12%{right:18%;opacity:.15}50%{opacity:1}88%,100%{right:80%;opacity:.15}}@keyframes pduDrift{0%,100%{transform:translateX(-12px)}50%{transform:translateX(12px)}}
-@media(max-width:760px){.osi-console{overflow-x:auto}.osi-stage{grid-template-columns:240px 330px 240px;min-width:850px}.host-stack{padding:.85rem}.pdu-stage{min-height:430px}.topology{grid-template-columns:150px 1fr 150px 1fr 150px;min-width:850px}.network-lab{overflow-x:auto}.device code{font-size:.95rem}.path-card>p{font-size:.95rem}.module-header>div:first-child>p{font-size:1rem}}
+/* Responsive layout: every module becomes a native mobile composition. */
+@media(max-width:900px){
+  .appbar{grid-template-columns:170px 1fr auto;padding-inline:1rem}
+  .appbar nav{gap:.2rem}
+  .nav-item{padding:.55rem .6rem}
+  main{width:100%;padding-inline:1rem}
+  .home-hero{grid-template-columns:1fr;gap:1rem;min-height:auto;padding:2.5rem 0 1.5rem}
+  .hero-copy{max-width:720px}
+  .hero-visual{width:100%;max-width:680px;margin:auto}
+  .module-header{grid-template-columns:1fr auto;min-height:170px}
+  .subnet-workspace{grid-template-columns:1fr}
+  .coach-panel{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .coach-head,.coach-panel ol{grid-column:1/-1}
+  .formula-card{margin:0}
+  .osi-stage{grid-template-columns:minmax(190px,.8fr) minmax(280px,1.2fr)}
+  .host-b{grid-column:1/-1}
+  .host-b .stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .topology{grid-template-columns:minmax(120px,1fr) minmax(45px,.35fr) minmax(120px,1fr) minmax(45px,.35fr) minmax(120px,1fr)}
+}
+
+@media(max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{font-size:16px}
+  button,input,select{font-size:16px}
+  button,.btn,.nav-item,.sound-toggle{min-height:44px}
+  .btn{font-size:.9rem}
+
+  .appbar{position:sticky;top:0;z-index:50;grid-template-columns:1fr auto;height:auto;padding:.65rem max(.75rem,env(safe-area-inset-right)) .55rem max(.75rem,env(safe-area-inset-left));background:#080a11f5;backdrop-filter:blur(18px)}
+  .logo{min-width:0;font-size:.95rem}
+  .logo-symbol{flex:0 0 36px}
+  .logo small{font-size:.52rem}
+  .sound-toggle{width:46px;padding:0}
+  .sound-toggle small,.sound-toggle b{display:none}
+  .appbar nav{grid-column:1/-1;order:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;margin-top:.55rem;gap:.25rem;overflow:visible}
+  .nav-item{min-width:0;padding:.5rem .2rem;border-radius:.55rem;font-size:.7rem;text-align:center;white-space:normal}
+  .nav-item span{font-size:.82rem}
+
+  main{width:100%;padding:.75rem max(.75rem,env(safe-area-inset-right)) 2rem max(.75rem,env(safe-area-inset-left))}
+  .screen{min-width:0}
+  .home-hero{padding:1.6rem 0 1rem}
+  .kicker{font-size:.7rem}
+  .hero-copy h1,.module-header h1{font-size:clamp(2.3rem,12vw,3.15rem);line-height:1.02}
+  .hero-copy>p,.module-header>div:first-child>p{font-size:1rem;line-height:1.65}
+  .hero-actions{display:grid;grid-template-columns:1fr;gap:.55rem}
+  .hero-actions .btn{width:100%}
+  .hero-visual{height:315px}
+  .packet-card{width:min(78vw,290px);padding:1.1rem}
+  .packet-card strong{font-size:1.25rem}
+  .route-preview{left:.7rem;right:.7rem;bottom:1rem;padding:.65rem .5rem;overflow:hidden}
+  .preview-step{font-size:.55rem}
+  .preview-step span{display:none}
+  .learning-path{grid-template-columns:1fr;gap:.75rem}
+  .path-heading{display:block;margin:1rem 0}
+  .path-heading>p{margin-top:.55rem;font-size:.92rem}
+  .path-card{min-height:0;padding:1.2rem}
+  .path-card>p{font-size:1rem;line-height:1.6}
+  .path-card>button{position:static;min-height:44px;margin-top:1rem;text-align:left}
+
+  .module-header{display:block;min-height:0;padding:1.65rem 0 1.2rem}
+  .module-header .eyebrow{font-size:.62rem}
+  .module-orb,.direction-badge{display:none}
+  .level-bar{align-items:stretch;gap:.75rem;padding:1rem}
+  .level-bar>div{width:100%}
+  .level-bar select,.level-bar .btn{width:100%;min-width:0;font-size:1rem}
+  .challenge-panel,.coach-panel,.osi-console,.network-lab,.insight-panel,.quiz-panel{padding:1rem}
+  .coach-panel{display:block}
+  .coach-panel ol{margin-block:.9rem}
+  .formula-card{margin-top:1rem}
+  .ip-question{padding:1rem}
+  .panel-heading{align-items:flex-start;flex-wrap:wrap;gap:.5rem}
+  .ip-question strong{font-size:clamp(1.4rem,8vw,2rem);overflow-wrap:anywhere}
+  .binary-decoration{font-size:.58rem;line-height:1.7;overflow-wrap:anywhere}
+  .answer-grid{grid-template-columns:1fr}
+  .answer-grid label{grid-template-columns:34px minmax(0,1fr);padding:.9rem}
+  .answer-grid input{grid-column:1/-1;width:100%;padding:.7rem 0 0}
+  .panel-actions{display:grid;grid-template-columns:1fr;gap:.55rem}
+  .panel-actions .btn{width:100%}
+
+  .osi-console{overflow:visible}
+  .console-controls{align-items:stretch;flex-direction:column;gap:.8rem}
+  .console-controls label{min-width:0;width:100%;margin:0}
+  .console-controls input{min-width:0;font-size:1rem}
+  .control-buttons{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+  .control-buttons .primary{grid-column:1/-1;grid-row:1}
+  .control-buttons .btn{padding-inline:.6rem}
+  .osi-route{padding:.7rem .15rem;overflow:hidden}
+  .osi-route li{display:block;min-width:0;text-align:center}
+  .osi-route li:not(:last-child):after{left:50%;right:-50%}
+  .osi-route li span{width:30px;height:30px;margin:auto}
+  .osi-route li b{display:block;padding:.35rem 0 0;font-size:.6rem;overflow-wrap:anywhere}
+  .osi-route li small{display:none}
+  .osi-stage{grid-template-columns:minmax(0,1fr);min-width:0;gap:.7rem;overflow:visible}
+  .osi-stage::after{display:none}
+  .pdu-stage{grid-row:1;min-height:330px;padding:1rem;overflow:hidden}
+  .pdu-stage::before{content:"▰";position:absolute;z-index:5;top:22%;left:8%;color:var(--gold);font-size:1.05rem;filter:drop-shadow(0 0 9px var(--gold));opacity:0;pointer-events:none}
+  .osi-stage.travel-ab .pdu-stage::before{opacity:1;animation:mobileTravelRight 5.2s ease-in-out infinite}
+  .osi-stage.travel-ba .pdu-stage::before{left:auto;right:8%;opacity:1;animation:mobileTravelLeft 5.2s ease-in-out infinite}
+  .pdu-core{width:min(88%,290px);min-width:0;padding:1rem}
+  .pdu-core h2{font-size:1.85rem}
+  .pdu-stage>p{max-width:32ch;font-size:.82rem;line-height:1.5}
+  .host-stack{padding:.8rem}
+  .host-b{grid-column:auto}
+  .host-b .stack{grid-template-columns:1fr}
+  .layer{min-height:44px;padding:.55rem .65rem;font-size:.78rem}
+  .layer b{font-size:.65rem}
+  .osi-bottom,.quiz-panel{grid-template-columns:1fr}
+  .insight-panel p{font-size:.9rem;line-height:1.55}
+  .options{grid-template-columns:1fr}
+  .options button{min-height:48px;font-size:.85rem}
+
+  .network-lab{overflow:visible}
+  .topology{grid-template-columns:minmax(0,1fr);min-width:0;gap:.55rem;min-height:0;padding:1rem}
+  .device{width:100%;padding:1rem}
+  .device code{display:block;margin-top:.2rem;color:#fff;font-size:1rem;font-weight:800;overflow-wrap:anywhere}
+  .device small{font-size:.75rem}
+  .link-line{width:2px;height:46px;margin:auto}
+  .link-line i{inset:0 -3px;background:linear-gradient(180deg,transparent,var(--cyan),transparent)}
+  .packet-runner{top:0;left:-7px;animation:packetDown 2.8s ease-in-out infinite}
+  .scenario-context{font-size:.82rem;line-height:1.55;overflow-wrap:anywhere}
+  .lab-questions{grid-template-columns:1fr}
+  .lab-questions article{padding:1rem;gap:.65rem}
+  .lab-questions h2{font-size:1rem;line-height:1.4}
+  #new-lab{width:100%}
+  footer{align-items:flex-start;flex-direction:column;padding-bottom:max(1rem,env(safe-area-inset-bottom))}
+}
+
+@media(max-width:420px){
+  .logo small{display:none}
+  .nav-item{font-size:.64rem}
+  .nav-item span{display:none}
+  .hero-visual{height:285px}
+  .route-preview{display:none}
+  .control-buttons{grid-template-columns:1fr}
+  .control-buttons .primary{grid-column:auto}
+  .osi-route li b{font-size:.52rem}
+  .quiz-panel,.challenge-panel,.coach-panel,.network-lab,.osi-console{padding:.8rem}
+}
+
+@keyframes mobileTravelRight{0%{left:8%;transform:translateY(-50%);opacity:0}14%,80%{opacity:1}100%{left:88%;transform:translate(-100%,-50%);opacity:0}}
+@keyframes mobileTravelLeft{0%{right:8%;transform:translateY(-50%);opacity:0}14%,80%{opacity:1}100%{right:88%;transform:translate(100%,-50%);opacity:0}}
+@keyframes packetDown{0%{top:0;opacity:0}15%,80%{opacity:1}100%{top:100%;opacity:0}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
