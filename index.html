@@ -1,273 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Subnetting - CCNA</title>
-    <style>
-        :root {
-            --primary: #005073;
-            --secondary: #107dac;
-            --background: #f4f7f6;
-            --surface: #ffffff;
-            --text: #333333;
-            --success: #28a745;
-            --error: #dc3545;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            padding: 2rem;
-            margin: 0;
-        }
-
-        .card {
-            background: var(--surface);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--primary);
-            margin-top: 0;
-        }
-
-        .problem-box {
-            background: var(--primary);
-            color: white;
-            text-align: center;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            font-size: 1.5rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-
-        input {
-            padding: 0.8rem;
-            border: 2px solid #ccc;
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--secondary);
-            outline: none;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        button {
-            flex: 1;
-            padding: 1rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .btn-check {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-check:hover { background-color: var(--secondary); }
-
-        .btn-next {
-            background-color: #e0e0e0;
-            color: var(--text);
-        }
-
-        .btn-next:hover { background-color: #d0d0d0; }
-
-        .feedback {
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: bold;
-            min-height: 20px;
-        }
-
-        .correct { color: var(--success); }
-        .incorrect { color: var(--error); }
-        input.correct-input { border-color: var(--success); background-color: #f8fff8; }
-        input.incorrect-input { border-color: var(--error); background-color: #fff8f8; }
-
-        .cheatsheet {
-            margin-top: 2rem;
-            border-top: 2px dashed #ccc;
-            padding-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th, td {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-
-        th { background-color: #f0f0f0; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Laboratorio interactivo para estudiar redes, subnetting y modelo OSI.">
+  <title>RedLab · Aprende redes practicando</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <div class="card">
-        <h1>Práctica de Subnetting</h1>
-        
-        <div class="problem-box" id="ip-display">
-            Cargando IP...
-        </div>
-
-        <div class="form-group">
-            <label>Dirección de Red (Ej. 192.168.1.0)</label>
-            <input type="text" id="in-network" placeholder="Ingresa la IP de red">
-            <div class="feedback" id="feed-network"></div>
-        </div>
-
-        <div class="form-group">
-            <label>Primera IP Utilizable</label>
-            <input type="text" id="in-first" placeholder="Ingresa la primera IP">
-            <div class="feedback" id="feed-first"></div>
-        </div>
-
-        <div class="form-group">
-            <label>Última IP Utilizable</label>
-            <input type="text" id="in-last" placeholder="Ingresa la última IP">
-            <div class="feedback" id="feed-last"></div>
-        </div>
-
-        <div class="form-group">
-            <label>Dirección de Broadcast</label>
-            <input type="text" id="in-broadcast" placeholder="Ingresa la IP de broadcast">
-            <div class="feedback" id="feed-broadcast"></div>
-        </div>
-
-        <div class="buttons">
-            <button class="btn-check" onclick="checkAnswers()">Comprobar Respuestas</button>
-            <button class="btn-next" onclick="generateProblem()">Siguiente Problema</button>
-        </div>
-
-        <div class="cheatsheet">
-            <strong>Tabla de Ayuda Rápida (4to Octeto)</strong>
-            <table>
-                <tr>
-                    <th>CIDR</th>
-                    <th>/24</th><th>/25</th><th>/26</th><th>/27</th><th>/28</th><th>/29</th><th>/30</th>
-                </tr>
-                <tr>
-                    <th>Máscara</th>
-                    <td>.0</td><td>.128</td><td>.192</td><td>.224</td><td>.240</td><td>.248</td><td>.252</td>
-                </tr>
-                <tr>
-                    <th>Salto</th>
-                    <td>256</td><td>128</td><td>64</td><td>32</td><td>16</td><td>8</td><td>4</td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <script>
-        let currentAnswers = {};
-
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-
-        function generateProblem() {
-            // Limpiar inputs
-            const inputs = ['network', 'first', 'last', 'broadcast'];
-            inputs.forEach(id => {
-                document.getElementById(`in-${id}`).value = '';
-                document.getElementById(`in-${id}`).className = '';
-                document.getElementById(`feed-${id}`).textContent = '';
-            });
-
-            // Generar IP aleatoria (enfocada en Clase C para practicar el 4to octeto)
-            const octet1 = 192;
-            const octet2 = 168;
-            const octet3 = getRandomInt(1, 20);
-            const octet4 = getRandomInt(1, 254);
-            const cidr = getRandomInt(25, 30); // /25 a /30 para forzar el cálculo
-
-            const ipString = `${octet1}.${octet2}.${octet3}.${octet4} /${cidr}`;
-            document.getElementById('ip-display').textContent = `IP: ${ipString}`;
-
-            // Calcular respuestas correctas
-            const magicNumber = Math.pow(2, 32 - cidr);
-            const networkOctet4 = Math.floor(octet4 / magicNumber) * magicNumber;
-            const broadcastOctet4 = networkOctet4 + magicNumber - 1;
-
-            const baseIp = `${octet1}.${octet2}.${octet3}.`;
-            
-            currentAnswers = {
-                network: baseIp + networkOctet4,
-                first: baseIp + (networkOctet4 + 1),
-                last: baseIp + (broadcastOctet4 - 1),
-                broadcast: baseIp + broadcastOctet4
-            };
-        }
-
-        function checkField(id, correctAnswer) {
-            const inputEl = document.getElementById(`in-${id}`);
-            const feedbackEl = document.getElementById(`feed-${id}`);
-            const userValue = inputEl.value.trim();
-
-            if (userValue === correctAnswer) {
-                inputEl.className = 'correct-input';
-                feedbackEl.textContent = '¡Correcto!';
-                feedbackEl.className = 'feedback correct';
-            } else {
-                inputEl.className = 'incorrect-input';
-                feedbackEl.textContent = `Incorrecto. La respuesta es: ${correctAnswer}`;
-                feedbackEl.className = 'feedback incorrect';
-            }
-        }
-
-        function checkAnswers() {
-            checkField('network', currentAnswers.network);
-            checkField('first', currentAnswers.first);
-            checkField('last', currentAnswers.last);
-            checkField('broadcast', currentAnswers.broadcast);
-        }
-
-        // Generar el primer problema al cargar la página
-        window.onload = generateProblem;
-    </script>
+  <a class="skip" href="#main">Saltar al contenido</a>
+  <header class="topbar">
+    <a class="brand" href="#inicio" aria-label="RedLab, inicio"><span class="brand-mark">R</span><span>Red<span>Lab</span></span></a>
+    <nav aria-label="Navegación principal">
+      <button class="nav-link active" data-view="inicio">Inicio</button><button class="nav-link" data-view="subnetting">Subnetting</button><button class="nav-link" data-view="osi">OSI y PDU</button><button class="nav-link" data-view="laboratorio">Laboratorio</button>
+    </nav>
+    <button id="sound-toggle" class="icon-btn" aria-label="Activar sonidos" aria-pressed="false">♬</button>
+  </header>
+  <main id="main">
+    <section id="inicio" class="view active">
+      <div class="hero"><div><p class="eyebrow">ESTUDIA · EXPERIMENTA · COMPRUEBA</p><h1>Aprende redes <em>haciendo</em>.</h1><p class="hero-copy">RedLab convierte conceptos de redes en prácticas breves, visuales y con retroalimentación inmediata.</p><div class="hero-actions"><button class="primary" data-go="subnetting">Practicar subnetting <span>→</span></button><button class="secondary" data-go="osi">Explorar el modelo OSI</button></div></div><aside class="hero-panel" aria-label="Resumen de la sesión"><p class="panel-label">SESIÓN ACTUAL</p><strong id="session-score">0</strong><span class="muted"> aciertos</span><div class="progress-track"><i id="session-progress"></i></div><p id="session-detail" class="muted">Elige un laboratorio para comenzar.</p></aside></div>
+      <section class="section-head"><div><p class="eyebrow">RUTA DE ESTUDIO</p><h2>Un concepto, una práctica, una conexión.</h2></div></section>
+      <div class="module-grid">
+        <article class="module-card subnet-card"><p class="module-number">01</p><h3>Subnetting IPv4</h3><p>Calcula redes, rangos, broadcast y hosts útiles con dificultad creciente.</p><ul><li>Principiante: /24 a /26</li><li>Intermedio: /20 a /30</li><li>Desafío: redes privadas variadas</li></ul><button class="card-link" data-go="subnetting">Abrir práctica →</button></article>
+        <article class="module-card osi-card"><p class="module-number">02</p><h3>OSI y encapsulación</h3><p>Sigue un mensaje desde la aplicación hasta el cable y descubre qué cambia en cada capa.</p><ul><li>Capas, PDUs y equipos</li><li>Encapsulación paso a paso</li><li>Preguntas explicadas</li></ul><button class="card-link" data-go="osi">Abrir simulador →</button></article>
+        <article class="module-card lab-card"><p class="module-number">03</p><h3>Laboratorio conectado</h3><p>Decide cómo viaja un paquete entre subredes y une direccionamiento, tramas y routers.</p><ul><li>¿Misma red o router?</li><li>IP, MAC y PDU</li><li>Escenario de red real</li></ul><button class="card-link" data-go="laboratorio">Resolver escenario →</button></article>
+      </div>
+    </section>
+    <section id="subnetting" class="view">
+      <div class="page-intro"><p class="eyebrow">MÓDULO 01 · DIRECCIONAMIENTO IPV4</p><h1>Subnetting sin adivinar.</h1><p>Encuentra la red y el rango usando el tamaño del bloque. Empieza con ayuda y retírala cuando ya no la necesites.</p></div>
+      <div class="toolbar"><label>Dificultad <select id="subnet-level"><option value="beginner">Principiante · /24–/26</option><option value="intermediate">Intermedio · /20–/30</option><option value="challenge">Desafío · privadas variadas</option></select></label><button id="new-subnet" class="secondary">Nuevo ejercicio</button></div>
+      <div class="practice-layout"><section class="problem-card"><p class="panel-label">DIRECCIÓN PARA ANALIZAR</p><div id="subnet-problem" class="ip-display">Cargando…</div><p id="subnet-context" class="muted"></p><div class="answer-grid"><label>Dirección de red<input id="answer-network" autocomplete="off" placeholder="Ej. 192.168.1.0"></label><label>Primera IP utilizable<input id="answer-first" autocomplete="off" placeholder="Ej. 192.168.1.1"></label><label>Última IP utilizable<input id="answer-last" autocomplete="off" placeholder="Ej. 192.168.1.254"></label><label>Broadcast<input id="answer-broadcast" autocomplete="off" placeholder="Ej. 192.168.1.255"></label></div><div class="actions"><button id="check-subnet" class="primary">Comprobar respuestas</button><button id="subnet-hint" class="secondary">Ver pista</button></div><div id="subnet-feedback" class="feedback" aria-live="polite"></div></section><aside class="learn-card"><p class="panel-label">GUÍA DE CÁLCULO</p><ol><li>Convierte el prefijo en máscara.</li><li>Identifica el octeto interesante.</li><li>Calcula el bloque: 256 − máscara.</li><li>La red inicia el bloque; broadcast termina el bloque.</li></ol><div id="subnet-hint-box" class="hint hidden"></div><p class="note">En redes /31 y /32 hay reglas especiales; se introducirán en una práctica avanzada.</p></aside></div>
+    </section>
+    <section id="osi" class="view">
+      <div class="page-intro"><p class="eyebrow">MÓDULO 02 · COMUNICACIÓN EN RED</p><h1>Ve el viaje de los datos.</h1><p>El modelo OSI es una guía conceptual. La pila TCP/IP real agrupa algunas de estas funciones.</p></div>
+      <div class="osi-layout"><section class="osi-simulator"><div class="sim-controls"><label>Mensaje<input id="osi-message" value="GET /recurso HTTP/1.1" maxlength="56"></label><div><button id="osi-step" class="primary">Siguiente paso</button><button id="osi-reset" class="secondary">Reiniciar</button></div></div><div class="flow"><div><p class="flow-label">EMISOR</p><div id="sender-stack" class="stack"></div></div><div class="pdu-stage"><p id="osi-direction" class="panel-label">LISTO PARA ENCAPSULAR</p><h2 id="pdu-name">Datos</h2><div id="pdu-visual" class="pdu-visual">Carga útil de aplicación</div><p id="osi-explanation">Avanza paso a paso para observar cómo se añaden o retiran encabezados.</p></div><div><p class="flow-label">RECEPTOR</p><div id="receiver-stack" class="stack"></div></div></div></section><aside class="learn-card"><p class="panel-label">IDEA CLAVE</p><div id="osi-insight"><h3>Encapsulación</h3><p>En cada capa inferior se añade información de control para que los datos puedan viajar y llegar al proceso correcto.</p></div><hr><p class="note">TCP usa segmentos; UDP usa datagramas. ARP resuelve IP a MAC en el enlace local; no es un protocolo de enrutamiento IP.</p></aside></div>
+      <section class="quiz-card"><div><p class="panel-label">COMPRUEBA TU COMPRENSIÓN</p><h2 id="osi-question">Cargando pregunta…</h2></div><div id="osi-options" class="options"></div><div id="osi-quiz-feedback" class="feedback" aria-live="polite"></div><button id="next-osi-question" class="secondary hidden">Siguiente pregunta</button></section>
+    </section>
+    <section id="laboratorio" class="view"><div class="page-intro"><p class="eyebrow">MÓDULO 03 · CONECTA LOS CONCEPTOS</p><h1>¿Cómo llega este mensaje?</h1><p>Resuelve un caso como lo haría un host antes de enviar tráfico.</p></div><section class="integrated-card"><div class="scenario-line"><span>Host A</span><code id="lab-source">—</code><b>→</b><span>Host B</span><code id="lab-destination">—</code></div><p id="lab-prefix" class="muted"></p><h2>1. ¿El destino está en la misma subred que el emisor?</h2><div id="lab-network-options" class="options compact"><button data-answer="same">Sí, se comunica directamente</button><button data-answer="remote">No, debe enviar al gateway/router</button></div><div id="lab-followup" class="hidden"><h2>2. ¿Qué PDU inspecciona principalmente el router para tomar la decisión?</h2><div id="lab-pdu-options" class="options compact"><button data-answer="frame">Trama y MAC</button><button data-answer="packet">Paquete e IP destino</button><button data-answer="segment">Segmento y puerto</button></div></div><div id="lab-feedback" class="feedback" aria-live="polite"></div><button id="new-lab" class="secondary">Nuevo escenario</button></section></section>
+  </main>
+  <footer>RedLab · herramienta de estudio de redes · aprende, prueba y vuelve a intentarlo</footer>
+  <script src="app.js"></script>
 </body>
 </html>
